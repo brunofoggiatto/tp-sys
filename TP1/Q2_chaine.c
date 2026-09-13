@@ -1,19 +1,24 @@
 #include <stdio.h>
-#include <sys/types.h>
+#include <stdlib.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
-void chaine(int n) {
- for (int i = 0; i < n; i++) {
-  pid_t pid = fork();
-  if (pid == 0) {
-   printf("Processus fils %d, pere %d\n", getpid(), getppid());
-  } else {
-   break;
-  }
+int main(int argc, char *argv[]) {
+ if (argc != 2) {
+  fprintf(stderr, "uso: %s n\n", argv[0]);
+  return 1;
  }
-}
+ int n = atoi(argv[1]);
 
-int main(void) {
- chaine(5);
- exit(0);
+ printf("processo %d, pai %d\n", getpid(), getppid());
+ for (int i = 0; i < n; i++) {
+  // esvazia o buffer antes do fork, senão o filho copia e repete o texto
+  fflush(stdout);
+  if (fork() == 0) {
+   printf("processo %d, pai %d\n", getpid(), getppid());
+   exit(0);
+  }
+  wait(NULL);
+ }
+ return 0;
 }
